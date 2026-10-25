@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView
 
-# Create your views here.
+class ChatListView(LoginRequiredMixin, ListView):
+    template_name = "chats/chat_list.html"
+    context_object_name = "chats"
+
+    def get_queryset(self):
+        return self.request.user.chats.order_by("-created_at")
