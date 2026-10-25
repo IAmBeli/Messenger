@@ -6,4 +6,8 @@ class ChatListView(LoginRequiredMixin, ListView):
     context_object_name = "chats"
 
     def get_queryset(self):
-        return self.request.user.chats.order_by("-created_at")
+        return (
+            self.request.user.chats
+            .prefetch_related("members")
+            .order_by("-created_at")
+        )

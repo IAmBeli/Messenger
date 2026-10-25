@@ -14,6 +14,15 @@ class Chat(models.Model):
     def __str__(self):
         return self.name or f"Chat {self.pk}"
 
+    def title_for(self, user):
+        """Return the chat title as seen by the given user."""
+        if self.is_group:
+            return self.name or f"Group {self.pk}"
+        for member in self.members.all():
+            if member != user:
+                return str(member)
+        return "Deleted account"
+
 class Membership(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
