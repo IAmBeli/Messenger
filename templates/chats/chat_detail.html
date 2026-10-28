@@ -17,4 +17,9 @@
             <p class="text_body-secondary">No messages yet.</p>
         {% endfor %}
     </div>
+    <form method="post" action="{% url 'send_message' chat.pk %}" class="d-flex gap-2 mt-3">
+        {% csrf_token %}
+        {{ form.text }}
+        <button type="submit" class="btn btn-primary align-self-end">Send</button>
+    </form>
 {% endblock %}
