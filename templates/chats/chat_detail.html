@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load chat_tags %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+    <a href="{% url 'chat_list' %}" class="d-inline-block mb-3">&larr; All chats</a>
+    <h1 class="h4 mb-3">{{ chat|title_for:user }}</h1>
+
+    <div class="d-flex flex-column gap-2">
+        {% for message in chat_messages %}
+            <div class="border rounded p-2 {% if message.author == user %}align-self-end{% else %}align-self-start{% endif %}">
+                <div class="small text-body-secondary">
+                    {{ message.author|default:"Deleted account" }} · {{ message.created_at|time:"H:i" }}
+                </div>
+                <div>{{ message.text|linebreaksbr }}</div>
+            </div>
+        {% empty %}
+            <p class="text_body-secondary">No messages yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
