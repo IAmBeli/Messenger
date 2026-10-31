@@ -20,7 +20,7 @@ psycopg==3.3.6
 psycopg-binary==3.3.6
 pycparser==3.12
 pyOpenSSL==26.4.0
-redis==8.1.0
+redis==7.4.1
 service-identity==26.1.0
 sqlparse==0.6.0
 Twisted==26.10.0
