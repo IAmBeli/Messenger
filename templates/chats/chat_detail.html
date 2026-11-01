@@ -5,7 +5,7 @@
     <a href="{% url 'chat_list' %}" class="d-inline-block mb-3">&larr; All chats</a>
     <h1 class="h4 mb-3">{{ chat|title_for:user }}</h1>
 
-    <div class="d-flex flex-column gap-2">
+    <div id="messages" class="d-flex flex-column gap-2">
         {% for message in chat_messages %}
             <div class="border rounded p-2 {% if message.author == user %}align-self-end{% else %}align-self-start{% endif %}">
                 <div class="small text-body-secondary">
@@ -14,7 +14,7 @@
                 <div>{{ message.text|linebreaksbr }}</div>
             </div>
         {% empty %}
-            <p class="text_body-secondary">No messages yet.</p>
+            <p id="no-message" class="text-body-secondary">No messages yet.</p>
         {% endfor %}
     </div>
     <form method="post" action="{% url 'send_message' chat.pk %}" class="d-flex gap-2 mt-3">
@@ -22,4 +22,39 @@
         {{ form.text }}
         <button type="submit" class="btn btn-primary align-self-end">Send</button>
     </form>
+{% endblock %}
+{% block scripts %}
+<script>
+    const chatId = Number("{{ chat.pk }}");
+    const userId = Number("{{ user.pk }}");
+    const socket = new WebSocket(`ws://${location.host}/ws/chats/${chatId}/`);
+    const MessagesBox = document.getElementById("messages");
+
+    function addMessage(data) {
+        const side = data.author_id === userId ? "align-self-end" : "align-self-start";
+        const time = new Date(data.created_at).toLocaleTimeString([], {
+            hour: "2-digit", minute: "2-digit", hour12: false,
+        });
+
+        const bubble = document.createElement("div");
+        bubble.className = `border rounded p-2 ${side}`;
+
+        const meta = document.createElement("div");
+        meta.className = "small text-body-secondary";
+        meta.textContent = `${data.author} · ${time}`;
+
+        const text = document.createElement("div");
+        text.style.whiteSpace = "pre-wrap";
+        text.textContent = data.text;
+
+        bubble.append(meta, text);
+        MessagesBox.append(bubble);
+        document.getElementById("no-messages")?.remove()
+    }
+
+    socket.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        addMessage(data);
+    });
+</script>
 {% endblock %}
