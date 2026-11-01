@@ -5,7 +5,7 @@
     <a href="{% url 'chat_list' %}" class="d-inline-block mb-3">&larr; All chats</a>
     <h1 class="h4 mb-3">{{ chat|title_for:user }}</h1>
 
-    <div id="messages" class="d-flex flex-column gap-2">
+    <div id="messages" class="d-flex flex-column gap-2 overflow-auto" style="height: 60vh;">
         {% for message in chat_messages %}
             <div class="border rounded p-2 {% if message.author == user %}align-self-end{% else %}align-self-start{% endif %}">
                 <div class="small text-body-secondary">
@@ -30,6 +30,10 @@
     const socket = new WebSocket(`ws://${location.host}/ws/chats/${chatId}/`);
     const MessagesBox = document.getElementById("messages");
 
+    function scrollToBottom() {
+        MessagesBox.scrollTop = MessagesBox.scrollHeight;
+    }
+
     function addMessage(data) {
         const side = data.author_id === userId ? "align-self-end" : "align-self-start";
         const time = new Date(data.created_at).toLocaleTimeString([], {
@@ -50,6 +54,7 @@
         bubble.append(meta, text);
         MessagesBox.append(bubble);
         document.getElementById("no-messages")?.remove()
+        scrollToBottom();
     }
 
     socket.addEventListener("message", (event) => {
@@ -79,5 +84,6 @@
             form.requestSubmit();
         }
     });
+    scrollToBottom();
 </script>
 {% endblock %}

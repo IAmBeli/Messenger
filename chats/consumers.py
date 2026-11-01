@@ -4,6 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
 from .forms import MessageForm
+from .broadcast import broadcast_message, chat_group_name
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -18,7 +19,7 @@ class ChatConsumer(WebsocketConsumer):
             self.close()
             return
 
-        self.group_name = f"chat_{self.chat.pk}"
+        self.group_name = chat_group_name(self.chat.pk)
         async_to_sync(self.channel_layer.group_add)(self.group_name, self.channel_name)
         self.accept()
 
@@ -37,17 +38,7 @@ class ChatConsumer(WebsocketConsumer):
         message.author = self.scope["user"]
         message.save()
 
-        async_to_sync(self.channel_layer.group_send)(
-            self.group_name,
-            {
-                "type": "chat.message",
-                "id": message.pk,
-                "author": str(message.author),
-                "author_id": message.author_id,
-                "text": message.text,
-                "created_at": message.created_at.isoformat(),
-            },
-        )
+        broadcast_message(message)
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))

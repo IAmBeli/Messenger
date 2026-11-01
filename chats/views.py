@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 
 from .forms import MessageForm
+from .broadcast import broadcast_message
 
 class ChatListView(LoginRequiredMixin, ListView):
     template_name = "chats/chat_list.html"
@@ -40,4 +41,5 @@ def send_message(request, pk):
         message.chat = chat
         message.author = request.user
         message.save()
+        broadcast_message(message)
     return redirect("chat_detail", pk=chat.pk)
