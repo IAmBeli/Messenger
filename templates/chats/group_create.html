@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Create a group{% endblock %}
+
+{% block content %}
+    <a href="{% url 'chat_list' %}" class="d-inline-block mb-3">&larr; All chats</a>
+    <h1 class="h4 mb-3">New group</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Create a group</button>
+    </form>
+{% endblock %}

@@ -1,10 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
+from django.db import transaction
 
-from .forms import MessageForm
+from .forms import MessageForm, GroupCreateForm
+from .models import Chat, Membership
 from .broadcast import broadcast_message
 
 class ChatListView(LoginRequiredMixin, ListView):
@@ -43,3 +45,18 @@ def send_message(request, pk):
         message.save()
         broadcast_message(message)
     return redirect("chat_detail", pk=chat.pk)
+
+@login_required
+def create_group(request):
+    if request.method == "POST":
+        form = GroupCreateForm(request.POST, user=request.user)
+        if form.is_valid():
+            with transaction.atomic():
+                chat = Chat.objects.create(name=form.cleaned_data["name"], is_group=True)
+                chat.members.add(request.user, through_defaults={"role": Membership.Role.ADMIN})
+                chat.members.add(*form.cleaned_data["members"])
+            return redirect("chat_detail", pk=chat.pk)
+
+    else:
+        form = GroupCreateForm(user=request.user)
+    return render(request, "chats/group_create.html", {"form": form})
