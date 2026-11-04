@@ -24,6 +24,10 @@ class Chat(models.Model):
         return "Deleted account"
 
 class Membership(models.Model):
+    class Role(models.TextChoices):
+        ADMIN = "admin", "Admin"
+        MEMBER = "member", "Member"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -35,11 +39,16 @@ class Membership(models.Model):
         related_name="memberships",
     )
     joined_at = models.DateTimeField(auto_now_add=True)
+    role = models.CharField(max_length=10, choices=Role.choices, default=Role.MEMBER)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["user", "chat"], name="unique_membership"),
         ]
+
+    @property
+    def is_admin(self):
+        return self.Role == self.Role.ADMIN
 
     def __str__(self):
         return f"{self.user} in {self.chat}"
