@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Start new chat{% endblock %}
+{% block content %}
+    <a href="{% url 'chat_list' %}" class="d-inline-block mb-3">&larr; All chats</a>
+    <h1 class="h4 mb-3">New chat</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary"
+    </form>
+{% endblock %}

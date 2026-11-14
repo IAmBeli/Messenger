@@ -5,7 +5,10 @@
 
 {% block content %}
     <h1 class="h3 mb-3">Chats</h1>
-    <a href="{% url 'create_group' %}" class="btn btn-primary mb-3">New group</a>
+    <div class="d-flex gap-2 mb-3">
+        <a href="{% url 'start_chat' %}" class="btn btn-primary">New chat</a>
+        <a href="{% url 'create_group' %}" class="btn btn-primary">New group</a>
+    </div>
     <div class="list-group">
         {% for chat in chats %}
             <a href="{% url 'chat_detail' chat.pk %}" class="list-group-item list-group-item-action">

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db import transaction
 
-from .forms import MessageForm, GroupCreateForm
+from .forms import MessageForm, GroupCreateForm, StartChatForm
 from .models import Chat, Membership
 from .broadcast import broadcast_message
 
@@ -60,3 +60,24 @@ def create_group(request):
     else:
         form = GroupCreateForm(user=request.user)
     return render(request, "chats/group_create.html", {"form": form})
+
+@login_required
+def start_chat(request):
+    if request.method == "POST":
+        form = StartChatForm(request.POST, user=request.user)
+        if form.is_valid():
+            other = form.cleaned_data["username"]
+            # Reuse the personal chat if these two users already have one
+            chat = (
+                Chat.objects.filter(is_group=False, members=request.user)
+                .filter(members=other)
+                .first()
+            )
+            if chat is None:
+                with transaction.atomic():
+                    chat = Chat.objects.create(is_group=False)
+                    chat.members.add(request.user, other)
+            return redirect("chat_detail", pk=chat.pk)
+    else:
+        form = StartChatForm(user=request.user)
+    return render(request, "chats/start_chat.html", {"form": form})
